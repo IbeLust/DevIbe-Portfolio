@@ -1,16 +1,15 @@
 'use server'
 
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/auth-server'
 import { db } from '@/lib/db'
 import { discordServers, discordMembers, moderationLogs, infractions } from '@/lib/db/schema'
 import { and, eq, desc, gte, lte } from 'drizzle-orm'
-import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 
 async function getUserId() {
-  const session = await auth.api.getSession({ headers: await headers() })
-  if (!session?.user) throw new Error('Unauthorized')
-  return session.user.id
+  const session = await getSession()
+  if (!session?.userId) throw new Error('Unauthorized')
+  return session.userId
 }
 
 export async function getDiscordServers() {
