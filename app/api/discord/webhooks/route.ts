@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { moderationLogs } from '@/lib/db/schema'
 import { nanoid } from 'nanoid'
+import { sendWebhookLogWithAction } from '@/lib/discord-webhook-logger'
 
 interface DiscordAuditLogEntry {
   id: string
@@ -28,7 +29,7 @@ const AUDIT_LOG_ACTIONS = {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { guild_id, user_id, action_type, target_id, reason } = body
+    const { guild_id, user_id, action_type, target_id, reason, webhook_url, duration } = body
 
     // Validate required fields
     if (!guild_id || !user_id) {
@@ -42,19 +43,39 @@ export async function POST(request: NextRequest) {
     if (action_type === 'timeout') actionType = 'timeout'
     if (action_type === 'mute') actionType = 'mute'
 
+    const moderatorUsername = body.moderator_username || 'Discord Bot'
+    const targetUsername = body.target_username || 'Unknown'
+
+    // Insert into database
     await db.insert(moderationLogs).values({
       id: nanoid(),
       serverId: guild_id,
       targetUserId: target_id || 'unknown',
-      targetUsername: body.target_username || 'Unknown',
+      targetUsername,
       moderatorId: user_id,
-      moderatorUsername: body.moderator_username || 'Discord Bot',
+      moderatorUsername,
       actionType,
       reason: reason || body.reason,
-      duration: body.duration,
+      duration,
     })
 
     console.log(`[v0] Webhook: Logged moderation action ${actionType} in guild ${guild_id}`)
+
+    // Send Discord webhook log if webhook_url is provided
+    if (webhook_url) {
+      const title = `${actionType.charAt(0).toUpperCase() + actionType.slice(1)} Action Logged`
+      await sendWebhookLogWithAction(
+        webhook_url,
+        title,
+        moderatorUsername,
+        user_id,
+        targetUsername,
+        target_id || 'unknown',
+        actionType,
+        reason || body.reason,
+        duration
+      )
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {

@@ -3,6 +3,7 @@ import { getSession } from '@/lib/auth-server'
 import { hasPermission } from '@/lib/permissions'
 import { db } from '@/lib/db'
 import { access_logs, infractions_detailed, reports, appeals } from '@/lib/db/schema'
+import { eq } from 'drizzle-orm'
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,10 +27,10 @@ export async function GET(request: NextRequest) {
 
     // Get all data for the server
     const [infractionData, reportsData, appealsData, auditData] = await Promise.all([
-      db.select().from(infractions_detailed).where((row) => row.serverId === serverId),
-      db.select().from(reports).where((row) => row.serverId === serverId),
-      db.select().from(appeals).where((row) => row.serverId === serverId),
-      db.select().from(access_logs).where((row) => row.serverId === serverId),
+      db.select().from(infractions_detailed).where(eq(infractions_detailed.serverId, serverId)),
+      db.select().from(reports).where(eq(reports.serverId, serverId)),
+      db.select().from(appeals).where(eq(appeals.serverId, serverId)),
+      db.select().from(access_logs).where(eq(access_logs.serverId, serverId)),
     ])
 
     // Calculate comprehensive statistics
