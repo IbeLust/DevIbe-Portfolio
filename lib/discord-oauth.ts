@@ -8,7 +8,6 @@ export interface DiscordUser {
   username: string
   email: string
   avatar?: string
-  verified?: boolean
   guilds?: DiscordGuild[]
 }
 
@@ -66,7 +65,6 @@ export async function getDiscordUser(accessToken: string): Promise<DiscordUser> 
       username: userData.username,
       email: userData.email,
       avatar: userData.avatar,
-      verified: userData.verified,
     }
   } catch (error) {
     console.error('[v0] Error getting Discord user:', error)
@@ -135,7 +133,7 @@ export async function createOrUpdateDiscordUser(discordUser: DiscordUser) {
         username: discordUser.username,
         email: discordUser.email,
         image: discordUser.avatar,
-        emailVerified: discordUser.verified ? new Date() : null,
+        emailVerified: new Date(),
         createdAt: new Date(),
       }
       await db.insert(user).values(newUser)

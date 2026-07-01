@@ -92,8 +92,8 @@ export default async function SignInPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <p className="text-xs font-medium">Secure</p>
-            <p className="text-xs text-muted-foreground">OAuth verified</p>
+            <p className="text-xs font-medium">Logging</p>
+            <p className="text-xs text-muted-foreground">Webhook logs</p>
           </div>
           <div className="text-center space-y-2">
             <div className="w-10 h-10 bg-primary/20 rounded-lg mx-auto flex items-center justify-center">
